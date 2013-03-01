@@ -38,6 +38,6 @@ int main(void)
                     		}
                          } 
                        printf("%lf\n",diff);  
-                     }while(diff <= 10.0);
+                     }while(diff <= 60.0);
                 return 0;
            }
