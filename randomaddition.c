@@ -10,8 +10,8 @@ static void catch_function(int signal)
                int num1;
                   int num2;
                   int num3;
-                  num1 = rand() / 10;
-                  num2 = rand() / 10;
+                  num1 = rand() % 1000;
+                  num2 = rand() % 1000;
                   num3 = num1 + num2;
                   printf("enter the sum of random number\n");
                   scanf("%d",&sum);
