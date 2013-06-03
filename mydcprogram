@@ -1,0 +1,127 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct dcinfo 
+{
+   unsigned int dcvtag;
+   unsigned int dcsrvload;
+   unsigned int dcramusage;
+   unsigned char *dcaddr;
+    int dcport;
+};
+
+struct ldcdata 
+{
+    unsigned int vtag;
+    unsigned int srvload;
+    unsigned int ramusage;
+    unsigned char *addr;
+    int port;
+};
+
+struct dcinfo dcdata[100];
+int main(int argc, char* argv[])
+{
+    int cnt,rav = 0,val =0;
+    struct ldcdata l_dcdata;
+     FILE* fp;
+
+    if((fp = fopen("count.txt", "r"))== NULL)
+       {
+             printf("file not open\n");
+        }
+    fscanf(fp, "%d",&cnt);
+    fclose(fp);
+    FILE* data;
+    int n,i,flag = 0;
+    if ((data = fopen("dcval.txt", "r+b")) == NULL)
+        {
+          printf("Error opening file\n");
+          return 1;
+        }
+    //fread(&dcdata, sizeof(struct dcinfo)*100, 1, data);
+    printf("enter id: ");
+    scanf("%d", &l_dcdata.vtag);
+    printf("enter load: ");
+    scanf("%d", &l_dcdata.srvload);
+    printf("enter ram usage: ");
+    scanf("%d", &l_dcdata.ramusage);
+    printf("enter port: ");
+
+    scanf("%d", &l_dcdata.port);
+    for (i =0 ; i < cnt; i++)
+          {
+       fread(&dcdata, sizeof(struct dcinfo)*100, 1, data); 
+       printf("times in:%d\n",i);
+       printf("gdcval:%d\n",dcdata[i].dcvtag);
+       printf("local value:%d\n",l_dcdata.vtag);
+        
+        if(dcdata[i].dcvtag == l_dcdata.vtag)
+          {
+       printf("times in in if condetion :%d\n",i);
+           
+           fseek(data, sizeof(struct dcinfo)*i, SEEK_SET);
+           rav = ftell(data);
+           printf("pogetion value:%d\n",rav);
+           val = sizeof(struct dcinfo);
+           printf("structure size :%d\n",val);
+           dcdata[i].dcvtag = l_dcdata.vtag;
+           dcdata[i].dcsrvload = l_dcdata.srvload;
+           dcdata[i].dcramusage = l_dcdata.ramusage;
+           dcdata[i].dcport = l_dcdata.port;
+           flag = 1;
+           fwrite(&dcdata[i],sizeof(struct dcinfo),1,data);
+           printf("flag:%d\n",flag);
+     break;
+          }
+       }
+     if(flag == 0)
+     {
+    if ((data = fopen("dcval.txt", "ab+")) == NULL)
+        {
+          printf("Error opening file\n");
+          return 1;
+        }
+     
+    dcdata[cnt].dcvtag = l_dcdata.vtag;
+    dcdata[cnt].dcsrvload = l_dcdata.srvload;
+    dcdata[cnt].dcramusage = l_dcdata.ramusage;
+    dcdata[cnt].dcport = l_dcdata.port;
+    cnt++;
+     if((fp = fopen("count.txt", "w"))== NULL)
+        {
+          printf("file not open\n");
+        }
+     fprintf(fp, "%d",cnt);
+     fclose(fp);
+      fseek(data,0,SEEK_SET);
+  
+    fwrite(&dcdata, sizeof(struct dcinfo) * 100, 1, data);
+     fclose(data);       
+     }
+     if ((data = fopen("dcval.txt", "r")) == NULL)
+        {
+            printf("Error opening file\n");
+            return 1;
+        }
+     if((fp = fopen("count.txt", "r"))== NULL)
+         {
+             printf("file not open\n");
+         }
+     fscanf(fp, "%d",&cnt);
+     fclose(fp);
+    
+     for (n = 0; n < cnt; n++)
+        {
+          fread(&dcdata, sizeof(struct dcinfo) * 100/* Just read one dcinfo */, 1, data);
+          printf("%d\n", dcdata[n].dcvtag);
+          printf("%d\n", dcdata[n].dcsrvload);
+          printf("%d\n", dcdata[n].dcramusage);
+          printf("%d\n", dcdata[n].dcport);
+          }
+
+    fclose(data);
+
+
+    return 0;
+}
