@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include "pcc_inc.h"
+
+int main()
+    {
+       unsigned long pccip;   //PCC IP Address
+       unsigned long remotip; //PCE IP Address
+       unsigned long srcip;   //source IP Address
+       unsigned long Destnip1;  //Destination IP Address
+       unsigned long Destnip2;  //Destination IP Address
+       unsigned long res;  //response
+       PCC_PATH_INFO_S *pstPathInfo = NULL; //Path Information
+       PCC_DEST_INFO_S *pstDestInfo = NULL; //Destination information
+      
+ 
+       pstPathInfo = (PCC_PATH_INFO_S *)malloc(sizeof(PCC_PATH_INFO_S)); //Dynamic memory allocation for PCC_PATH_INFO_S Structure 
+       memset(pstPathInfo, 0, sizeof(PCC_PATH_INFO_S));
+      
+       pstDestInfo = (PCC_DEST_INFO_S *)malloc(sizeof(PCC_DEST_INFO_S)); //Dynamic memory allocation for PCC_DEST_INFO_S Structure
+       memset(pstPathInfo, 0, sizeof(PCC_DEST_INFO_S));  
+     
+       
+        
+       pccip   = inet_addr( "192.168.0.12" );
+       remotip = inet_addr( "192.168.0.1" );   
+       
+       srcip   = inet_addr( "192.168.1.221" );
+       Destnip1  = inet_addr( "7.7.7.7" );
+       Destnip2  = inet_addr( "6.6.6.6" );
+ 
+
+       //data structure for network query
+       pstPathInfo->uiIngressLsrId = srcip;
+       
+       pstDestInfo[0].uiEgressLsrId = Destnip1;
+       pstDestInfo[1].uiEgressLsrId = Destnip2;
+         
+       pstPathInfo->pstDestInfo = pstDestInfo;
+       pstPathInfo->ulDestCnt   = 2;
+
+       pstPathInfo->pAppInfo = NULL;
+       pstPathInfo->stConstraints.enMetricType      = PCC_METRIC_TYPE_TE;
+       pstPathInfo->stConstraints.uiTieBreakingType = PCC_RANDOM_FILL;
+       pstPathInfo->stConstraints.uiSrlgType        = PCC_SRLG_NONE;
+       pstPathInfo->stDsteInfo.ucHoldPriority       = 7;
+       pstPathInfo->stDsteInfo.ucSetupPriority      = 7;
+       pstPathInfo->enResultFormat                  = PCC_RESULT_TYPE_PATH;
+       pstPathInfo->ulNetworkQueryId                = 1; 
+
+       
+
+       //Initialize the PCC
+       res = PCC_Init( pccip, PCC_MODE_SYNC ); 
+       if( res != PCC_SUCCESS_E )
+          {
+            printf("PCC init error occured\n err no:%lu\r\n",res);
+            return res;
+          }
+       else
+          { 
+            printf("PCC connection Successfull\r\n");
+          }
+       res = PCC_ConnectPCE(remotip); //Connecting to the PCE
+       if ( PCC_SUCCESS_E != res )
+          {
+            printf("\r\nPCC_ConnectPCE Failure, Error Code: %lu\r\n", res);
+            return res;
+          }
+       else
+          {
+            printf("PCC TO PCE connection Successfully established\r\n");
+          }
+       // Invoke path computation request 
+       res = PCC_NetworkQuery(pstPathInfo);
+       if ( PCC_SUCCESS_E != res )
+          {
+            printf("\r\nPCC_NetworkQuery Failure, Error Code: %lu\r\n", res);
+            return res;
+           }
+       else
+          {
+           printf(" ");
+          }
+       
+       res = PCC_DisConnectPCE(remotip); //Disconnecting the PCE
+       if ( PCC_SUCCESS_E != res )
+          {
+            printf("\r\nPCC_DISConnectPCE Failure, Error Code: %lu\r\n", res);
+            return res;
+          }
+       else
+          {
+            printf("PCE Successfully Disconnected\r\n");
+          }
+
+
+       return 0;    
+    }
+       
